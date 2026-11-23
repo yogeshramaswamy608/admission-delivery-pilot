@@ -1,0 +1,7 @@
+{
+  "tag": "v1.0.2",
+  "title": "Admission delivery pilot v1.0.2",
+  "expected_zip_sha256": "e58f8f7ef7f223d29a669302a8498c163492659d9cb1ba174acdba82a7c04b20",
+  "prerelease": false,
+  "purpose": "Clean run of the v1.0.2 release assets on a GitHub-hosted runner."
+}

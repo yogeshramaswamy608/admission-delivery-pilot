@@ -1,0 +1,19 @@
+Check H1, “Validate the receiver,” using the attached H1_Receiver_Test_Kit_v3.zip. I will decide whether to accept H1.
+
+Use a new directory on a private Linux test computer. Preserve earlier attempts. Use only the four fictional notices, the specified eCRNow receiver and its fresh database. Read START_HERE.md.
+
+From the extracted kit directory run:
+
+python3 start_h1.py --dry-run
+python3 start_h1.py
+
+Run the second command only if the first succeeds. Keep the kit and its checks as supplied. If you cannot run it, report BLOCKED and the exact missing prerequisite.
+
+Report what the saved evidence shows for each check:
+1. Did each of the four notices pass official validation? Identify its input hash and report. List each unresolved warning or error.
+2. Were all four admissions absent initially (four 204 responses)? Did the receiver accept each first delivery (four 200 responses)?
+3. Did the first read of admission three return exactly one record matching the complete original Encounter?
+4. Did the receiver reject the identical third notice specifically as a duplicate (422)? Quote the rejection reason.
+5. Did the final read still return exactly one complete matching record?
+
+Give a technical verdict, PASS, STOPPED or BLOCKED. Attach the generated evidence ZIP, identify the software versions actually used, and give the start and end times in Pacific time. For any step the kit did not reach, write “not run.” If the run stops, return its exact error and partial evidence. Leave warning approval and H1 acceptance open. Stop at H1.

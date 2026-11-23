@@ -1,0 +1,5 @@
+{
+  "base_url": "http://127.0.0.1:50991/fhir/r4",
+  "subscription_id": "encounter-start",
+  "patient_id": "drill-patient-1"
+}

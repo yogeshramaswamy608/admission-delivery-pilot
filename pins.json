@@ -1,0 +1,47 @@
+{
+  "distribution": "v1.0.2",
+  "baseline_archive_sha256": "d007427846fcfbcdc31225ac683fb537a84451ede2b2efdc8de624970d117ea5",
+  "h1_manifest_sha256": "01b7d43d8487a3735357eceed53284a097e4d066d8b80ce401db6689da540bec",
+  "specification": {
+    "fhir": "4.0.1",
+    "subscriptions_backport": "1.1.0"
+  },
+  "source": {
+    "name": "fhir-candle",
+    "version": "2026.708.1348",
+    "commit": "f04a1d4bdcf0265eb401b98eb0647a4ff373813e",
+    "nuget_url": "https://api.nuget.org/v3-flatcontainer/fhir-candle/2026.708.1348/fhir-candle.2026.708.1348.nupkg",
+    "sha256": "55ac4cc583c229664f5a528d5771cf75d24aaf5e7a70ec7a20413084b8091317"
+  },
+  "source_runtime": [
+    {
+      "name": "ASP.NET Core",
+      "version": "8.0.34",
+      "platform": "linux-x64",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/8.0.34/aspnetcore-runtime-8.0.34-linux-x64.tar.gz",
+      "sha512": "ecf5b14d8a7ec32a3662f131e74c40f9003534e98b24c682c07c0d68f653d08fb1d67c9b3497efdd3d2790179cbeda9fc80b1f88736964411719d94feada9533"
+    },
+    {
+      "name": "libicu78",
+      "version": "78.2-2ubuntu1",
+      "platform": "amd64",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu78_78.2-2ubuntu1_amd64.deb",
+      "sha256": "c8b97930f9e365d6d00978144b468ac8397ef07d2fb2c453869f05fc3a98c4ca"
+    }
+  ],
+  "receiver": {
+    "name": "eCRNow",
+    "version": "4.0.4",
+    "commit": "89da654471b651dd70592f371e577fffa3c5f04e",
+    "image": "drajerhealth/ecr-now@sha256:28a195c6138316988689adf21afcc2a239bf1f95dc9bc0b52e87fb113adc2976"
+  },
+  "database": {
+    "name": "PostgreSQL",
+    "version": "15.20",
+    "image": "postgres@sha256:e924003122c1459b25ebe2af0f5b8becc8b50ccee1354b304e5ba7ec1e0bb42c"
+  },
+  "test_client": {
+    "image": "python@sha256:e8c69d86735f6df3efa06b324694fe51f0422785f83a3bd463052636c2421944"
+  },
+  "migrations": "H1_Validate_the_Receiver/local-wsl-v3/runtime/migrations.json"
+}

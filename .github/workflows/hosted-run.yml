@@ -1,0 +1,167 @@
+# Clean 45-trial run of a release on a GitHub-hosted runner that never held the project.
+# Started by a push to main that changes .github/run-request.json, or by hand from the Actions tab.
+# Job "stage": rebuilds the release ZIP from this commit, checks it against the requested digest and
+#   creates the requested release with its two assets (once; an existing release is checked, never replaced).
+# Job "run": on a fresh runner, downloads the two release assets into an empty directory, checks the digest,
+#   extracts, runs --verify, --test and the live matrix, then adds the evidence archive, the audit file and a
+#   run record to the same release, summarizes the host and the audit counts, and, only when the live run
+#   exits 0 with 45 PASS, writes the release notes from .github/release-notes.md with tools/write_release_notes.py.
+# No third-party actions are used. The only secrets read are the optional DOCKERHUB_USERNAME and DOCKERHUB_TOKEN.
+name: hosted-run
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/run-request.json"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hosted-run
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    outputs:
+      tag: ${{ steps.request.outputs.tag }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Fetch this commit
+        run: |
+          gh auth setup-git
+          gh repo clone "$GITHUB_REPOSITORY" repo -- --no-checkout --filter=blob:none
+          git -C repo checkout --quiet "$GITHUB_SHA"
+      - name: Read the request
+        id: request
+        working-directory: repo
+        run: |
+          python3 -I - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json
+          r = json.load(open(".github/run-request.json", encoding="utf-8"))
+          print(f"tag={r['tag']}")
+          print(f"title={r['title']}")
+          print(f"sha256={r['expected_zip_sha256']}")
+          print(f"prerelease={str(r['prerelease']).lower()}")
+          EOF
+          cat "$GITHUB_OUTPUT"
+      - name: Rebuild the release ZIP and check its digest
+        working-directory: repo
+        run: |
+          built=$(python3 -I tools/build_release_zip.py "$RUNNER_TEMP/assets")
+          echo "Built $built"
+          test "$built" = "${{ steps.request.outputs.sha256 }}" || { echo "::error::Rebuilt ZIP digest $built differs from the request."; exit 1; }
+      - name: Create the release, or check the existing one
+        run: |
+          tag="${{ steps.request.outputs.tag }}"
+          if gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            mkdir "$RUNNER_TEMP/existing"
+            gh release download "$tag" -R "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/existing" -p "admission-delivery-pilot-*.zip"
+            cmp "$RUNNER_TEMP/existing/"*.zip "$RUNNER_TEMP/assets/"*.zip && echo "Existing release asset matches; nothing replaced."
+          else
+            flag=""
+            if [ "${{ steps.request.outputs.prerelease }}" = "true" ]; then flag="--prerelease"; fi
+            gh release create "$tag" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" $flag \
+              --title "${{ steps.request.outputs.title }}" --notes "Assets for a hosted run. Release text follows the release decision." \
+              "$RUNNER_TEMP/assets/"*.zip "$RUNNER_TEMP/assets/"*.zip.sha256
+          fi
+
+  run:
+    needs: stage
+    runs-on: ubuntu-26.04
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.stage.outputs.tag }}
+    steps:
+      - name: Record the host
+        run: |
+          mkdir -p "$RUNNER_TEMP/record"
+          {
+            echo "recorded_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "runner_image=$ImageOS $ImageVersion"
+            grep -E '^(PRETTY_NAME|VERSION_ID)=' /etc/os-release
+            uname -r
+            python3 --version
+            docker version --format 'docker_engine={{.Server.Version}}'
+            docker compose version
+            echo "cpus=$(nproc) memory_kib=$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
+            df -h / | tail -1
+          } | tee "$RUNNER_TEMP/record/environment.txt"
+      - name: Sign in to Docker Hub when a read-only token is set
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [ -n "$DOCKERHUB_USERNAME" ] && [ -n "$DOCKERHUB_TOKEN" ]; then
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            echo "docker_hub=signed in with a read-only token" >> "$RUNNER_TEMP/record/environment.txt"
+          else
+            echo "docker_hub=anonymous" | tee -a "$RUNNER_TEMP/record/environment.txt"
+          fi
+      - name: Download the two release assets into an empty directory and check the digest
+        run: |
+          mkdir "$RUNNER_TEMP/pilot" && cd "$RUNNER_TEMP/pilot"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "admission-delivery-pilot-*.zip" -p "admission-delivery-pilot-*.zip.sha256"
+          ls -l
+          sha256sum -c admission-delivery-pilot-*.zip.sha256
+          python3 -m zipfile -e admission-delivery-pilot-*.zip .
+      - name: Offline checks
+        run: |
+          cd "$RUNNER_TEMP/pilot"/admission-delivery-pilot-v*/
+          python3 -B run.py --verify
+          python3 -B run.py --test
+      - name: Live run
+        id: live
+        run: |
+          cd "$RUNNER_TEMP/pilot"/admission-delivery-pilot-v*/
+          set +e
+          python3 -B run.py 2>&1 | tee "$RUNNER_TEMP/record/live.log"
+          code=${PIPESTATUS[0]}
+          echo "live_exit=$code" | tee -a "$RUNNER_TEMP/record/environment.txt"
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+      - name: Add the evidence to the release
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/pilot"/admission-delivery-pilot-v*/
+          mkdir -p "$RUNNER_TEMP/out"
+          for f in H4_Delivery_Cases/runs/H4-*.zip H4_Delivery_Cases/runs/H4-*-audit.json; do
+            [ -e "$f" ] && cp "$f" "$RUNNER_TEMP/out/"
+          done
+          launch=$(ls run-history | tail -1)
+          cp -r run-history "$RUNNER_TEMP/record/"
+          [ -d H2_Compare_Recovery/source-server/runs ] && cp -r H2_Compare_Recovery/source-server/runs "$RUNNER_TEMP/record/source-runs"
+          (cd "$RUNNER_TEMP/record" && python3 -m zipfile -c "$RUNNER_TEMP/out/hosted-run-${launch:-none}-record.zip" .)
+          ls -l "$RUNNER_TEMP/out"
+          gh release upload "$TAG" -R "$GITHUB_REPOSITORY" --clobber "$RUNNER_TEMP/out/"*
+      - name: Summarize the host record and the audit counts
+        if: always()
+        run: |
+          {
+            echo "### Hosted run of $TAG"
+            echo '```'
+            cat "$RUNNER_TEMP/record/environment.txt"
+            for a in "$RUNNER_TEMP/out/"*-audit.json; do
+              [ -e "$a" ] && python3 -I -c "import json,sys; r=json.load(open(sys.argv[1])); print('audit', r['run'], r['counts'], 'global', len(r['global_findings']), 'flagged', len(r['flagged']), 'not_run', len(r['not_run']))" "$a"
+            done
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_STEP_SUMMARY"
+      - name: Write the release notes from this run's files
+        if: steps.live.outputs.exit == '0'
+        run: |
+          gh auth setup-git
+          gh repo clone "$GITHUB_REPOSITORY" "$RUNNER_TEMP/repo" -- --no-checkout --filter=blob:none
+          git -C "$RUNNER_TEMP/repo" checkout --quiet "$GITHUB_SHA"
+          cd "$RUNNER_TEMP/out"
+          archive=$(ls H4-*.zip); audit=$(ls H4-*-audit.json); record=$(ls hosted-run-*-record.zip)
+          python3 -I "$RUNNER_TEMP/repo/tools/write_release_notes.py" "$RUNNER_TEMP/repo/.github/release-notes.md" \
+            "$RUNNER_TEMP/record/environment.txt" "$audit" "$archive" "$record" \
+            "$GITHUB_RUN_ID" "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" "$RUNNER_TEMP/notes.md"
+          gh release edit "$TAG" -R "$GITHUB_REPOSITORY" --notes-file "$RUNNER_TEMP/notes.md"
+      - name: Fail unless the live run passed
+        run: test "${{ steps.live.outputs.exit }}" = "0"

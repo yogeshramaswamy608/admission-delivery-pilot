@@ -1,0 +1,51 @@
+{
+  "services": {
+    "database": {
+      "image": "postgres@sha256:e924003122c1459b25ebe2af0f5b8becc8b50ccee1354b304e5ba7ec1e0bb42c",
+      "platform": "linux/amd64",
+      "networks": ["private"],
+      "volumes": ["database:/var/lib/postgresql/data", "credentials:/run/h1-credentials"],
+      "environment": {
+        "POSTGRES_DB": "ecrnow",
+        "POSTGRES_USER": "h1",
+        "POSTGRES_PASSWORD_FILE": "/run/h1-credentials/jdbc.password"
+      },
+      "entrypoint": ["/bin/sh", "-ec"],
+      "command": [
+        "umask 077; if [ ! -s /run/h1-credentials/jdbc.password ]; then test ! -s /var/lib/postgresql/data/PG_VERSION; for name in jdbc.password security.key; do od -An -N32 -tx1 /dev/urandom | tr -d '[:space:]' > /run/h1-credentials/$$name; test -s /run/h1-credentials/$$name; done; fi; exec docker-entrypoint.sh postgres"
+      ]
+    },
+    "receiver": {
+      "image": "drajerhealth/ecr-now@sha256:28a195c6138316988689adf21afcc2a239bf1f95dc9bc0b52e87fb113adc2976",
+      "platform": "linux/amd64",
+      "networks": ["private"],
+      "volumes": ["credentials:/run/h1-credentials:ro"],
+      "environment": {
+        "SPRING_CONFIG_IMPORT": "configtree:/run/h1-credentials/",
+        "JDBC_URL": "jdbc:postgresql://database:5432/ecrnow",
+        "JDBC_USERNAME": "h1",
+        "SERVER_PORT": "8081",
+        "SERVER_ADDRESS": "127.0.0.1",
+        "LOGGING_FILE_NAME": "/tmp/h1-ecr.log",
+        "ERSD_FILE_LOCATION": "/java-app/src/test/resources/AppData/ersd.json",
+        "SCHEMATRON_FILE_LOCATION": "/java-app/src/test/resources/AppData/schematrons/CdaR11/CDAR2_IG_PHCASERPT_R2_STU1.1_SCHEMATRON.sch",
+        "EICR_R31_SCHEMATRON_FILE_LOCATION": "/java-app/src/test/resources/AppData/schematrons/CdaR31/CDAR2_IG_PHCASERPT_R2_D3_SCHEMATRON.sch",
+        "XSD_SCHEMAS_LOCATION": "/java-app/src/test/resources/AppData/Schema/infrastructure/cda/CDA_SDTC.xsd",
+        "KAR_DIRECTORY": "/tmp/h1/kars",
+        "BSA_OUTPUT_DIRECTORY": "/tmp/h1/output/",
+        "CUSTOM_QUERY_DIRECTORY": "/tmp/h1/queries",
+        "SCHEDULED_TASK_FILE_PATH": "/tmp/h1/scheduled-task.json"
+      },
+      "entrypoint": ["/bin/sh", "-ec"],
+      "command": ["if ! test -r /run/h1-credentials/jdbc.password || ! test -s /run/h1-credentials/security.key; then echo H1_CONFIG_PERMISSION >&2; exit 20; fi; mkdir -p /tmp/h1/kars /tmp/h1/output /tmp/h1/queries; exec java -jar /java-app/target/ecr-now.war"]
+    }
+  },
+  "networks": {"private": {"internal": true}},
+  "volumes": {
+    "database": {},
+    "credentials": {
+      "driver": "local",
+      "driver_opts": {"type": "tmpfs", "device": "tmpfs", "o": "size=64k,mode=0700"}
+    }
+  }
+}

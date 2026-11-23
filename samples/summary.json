@@ -1,0 +1,36 @@
+{
+  "description": "Selected fields from the accepted H4 audit, supplied as an example only.",
+  "run": "20261119T170216Z-22c2c831",
+  "archive_sha256": "d007427846fcfbcdc31225ac683fb537a84451ede2b2efdc8de624970d117ea5",
+  "counts": {
+    "PASS": 45
+  },
+  "trials": {
+    "missing-off-r1": {
+      "runner": "PASS",
+      "independent": "PASS",
+      "observations": {
+        "deadline_three_rows": 0,
+        "final_three_rows": 0
+      }
+    },
+    "late-replay-r1": {
+      "runner": "PASS",
+      "independent": "PASS",
+      "observations": {
+        "deadline_three_rows": 1,
+        "final_three_rows": 1,
+        "scheduled_http": 422
+      }
+    },
+    "reordered-search-r1": {
+      "runner": "PASS",
+      "independent": "PASS",
+      "observations": {
+        "deadline_three_rows": 1,
+        "final_three_rows": 1,
+        "scheduled_http": 200
+      }
+    }
+  }
+}

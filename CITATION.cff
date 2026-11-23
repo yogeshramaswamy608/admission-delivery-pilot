@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this package, please cite it as below and include the ZIP digest with your results."
+title: "Admission delivery pilot"
+version: "v1.0.2"
+license: Apache-2.0
+authors:
+  - family-names: "Ramaswamy"
+    given-names: "Yogesh"

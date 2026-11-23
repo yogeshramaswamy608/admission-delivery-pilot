@@ -1,0 +1,94 @@
+[
+  {
+    "path": "init_schema_and_data/client_details.sql",
+    "git_blob": "032cd436809ff74be79698d659dc01f10fc7f50a"
+  },
+  {
+    "path": "init_schema_and_data/healthcareSettings.sql",
+    "git_blob": "d81a240da457ab1470119a2732ca8bb66a57bbb6"
+  },
+  {
+    "path": "init_schema_and_data/launch_details.sql",
+    "git_blob": "63183d09c9c59789193487863211a9d44405f286"
+  },
+  {
+    "path": "init_schema_and_data/eicr.sql",
+    "git_blob": "60e7e533e4f4768d6f694c135eb4dfcf21e378ac"
+  },
+  {
+    "path": "init_schema_and_data/kar_repos.sql",
+    "git_blob": "4c1960ccd2a59fc2f9127fc57aa84fa297314881"
+  },
+  {
+    "path": "init_schema_and_data/kar_info.sql",
+    "git_blob": "3ae6a530a8af3a9d6d7fc21c3a62b5f16eec0455"
+  },
+  {
+    "path": "init_schema_and_data/kar_execution_state.sql",
+    "git_blob": "cbf7b91885de67b41160060169bb0253a6eefee8"
+  },
+  {
+    "path": "init_schema_and_data/hs_kar_status.sql",
+    "git_blob": "6077ced6b4ff305182c564ad8175f3dbd166e205"
+  },
+  {
+    "path": "init_schema_and_data/notification_context.sql",
+    "git_blob": "2f3d249e01a37cfa6f3184afc76c0b98df83e6c5"
+  },
+  {
+    "path": "init_schema_and_data/ph_messages.sql",
+    "git_blob": "edf3e2522dc1f030efc6aa71699b928e8c32b67e"
+  },
+  {
+    "path": "init_schema_and_data/public_health_authority.sql",
+    "git_blob": "830d17dc8a6c8835a18aa9bc5e783e3e3e7862ee"
+  },
+  {
+    "path": "init_schema_and_data/scheduled_tasks.sql",
+    "git_blob": "15f44846fc49da810aed766f2327ef33954b0c7c"
+  },
+  {
+    "path": "schema_alterations_and_constraints/healthcare_setting.sql",
+    "git_blob": "998ff5e9dfded1c8bdb766fc273dcbe29b12894f"
+  },
+  {
+    "path": "schema_alterations_and_constraints/launch_details.sql",
+    "git_blob": "e78e570274df19aea5ed0c9ead15970fcddabc24"
+  },
+  {
+    "path": "schema_alterations_and_constraints/notification_context.sql",
+    "git_blob": "8060fa01a1b9e1416b9f64ee9e8a15847ea340d3"
+  },
+  {
+    "path": "schema_alterations_and_constraints/ph_messages.sql",
+    "git_blob": "cd61b81f6b0e03bc2d56e980f2259a38c708b962"
+  },
+  {
+    "path": "schema_alterations_and_constraints/public_health_authority.sql",
+    "git_blob": "197dce7955792b7930656244ae4a27976cca848e"
+  },
+  {
+    "path": "schema_alterations_and_constraints/client_details.sql",
+    "git_blob": "9cf823a11d64437ac7e9a59c932c50efa776fc98"
+  },
+  {
+    "path": "schema_alterations_and_constraints/kar_info.sql",
+    "git_blob": "4023244038cbc7a5dc95bc5eada354bd86fed85a"
+  },
+  {
+    "path": "schema_alterations_and_constraints/kar_repo.sql",
+    "git_blob": "f2b0bd155237b6ab73e0ea4cd89c4389c8cd2c60"
+  },
+  {
+    "path": "schema_alterations_and_constraints/kar_execution_state.sql",
+    "git_blob": "4229780bd983e7cc04f28a68e64f3223d8cc9090"
+  },
+  {
+    "path": "schema_alterations_and_constraints/hs_kar_status.sql",
+    "git_blob": "4fda274c4d4ecccd22a2f4dccd8200a528c6dfc0"
+  },
+  {
+    "path": "schema_alterations_and_constraints/fix_all_v2_sequences.sql",
+    "git_blob": "1ae0edaaaf198423337b427f580458232eb842d4"
+  }
+]

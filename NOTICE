@@ -1,0 +1,14 @@
+Admission delivery pilot
+Copyright 2026 Yogesh Ramaswamy, for the project material he can license
+
+The project material Yogesh Ramaswamy can license is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+No upstream software is included in this package. The run downloads each component below by pinned address or digest. Each component stays under its own license and is not redistributed here. Each license was read on Nov 19, 2026 from the source named beside it.
+
+eCRNow 4.0.4 receiver image (drajerhealth/ecr-now, commit 89da654471b651dd70592f371e577fffa3c5f04e): Apache License 2.0, per LICENSE in the drajer-health/eCRNow repository at that commit. The schema SQL is copied from that image at run time and checked against the git blobs listed in H1_Validate_the_Receiver/local-wsl-v3/runtime/migrations.json; it is not included here.
+fhir-candle 2026.708.1348 (NuGet package): MIT, per the license expression in the package's nuspec.
+ASP.NET Core Runtime 8.0.34 (Microsoft): MIT, per LICENSE.txt in the downloaded archive, which also carries ThirdPartyNotices.txt.
+libicu78 78.2-2ubuntu1 (Ubuntu package): MIT for its main files, per the package's copyright file.
+PostgreSQL 15.20 (official postgres image): PostgreSQL License, per postgresql.org. The image's build files are MIT, per the docker-library/postgres repository.
+Python test-client image (official python image): Python Software Foundation License, per docs.python.org. The image's build files are MIT, per the docker-library/python repository.
+Each container image also holds operating system packages under their own licenses.
